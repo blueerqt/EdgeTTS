@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文字替换 (TTS朗读版)</title>
+<style>
+/* 全局样式：让页面在手机上更好看 */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+/* 2. 优化显示区域：
+   - 放在最上方（为了TTS）
+   - 增加自动换行 (word-wrap)
+   - 字体调大方便阅读
+*/
+#text-container {
+    background-color: white;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 20px; /* 和下方输入框拉开距离 */
+    min-height: 100px;   /* 即使没文字也有个高度 */
+    
+    font-size: 18px;     /* 手机上字大一点 */
+    line-height: 1.6;
+    
+    /* 核心功能：自动换行 */
+    white-space: pre-wrap;       /* 保留换行符，但超出范围自动换行 */
+    word-wrap: break-word;       /* 英文长单词强制换行 */
+    overflow-wrap: break-word;
+}
+
+/* 输入框优化 */
+#input-box {
+    width: 100%;
+    height: 150px;
+    font-size: 16px; /* 防止手机自动缩放 */
+    padding: 10px;
+    box-sizing: border-box; /* 边框计算在宽度内 */
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+}
+
+/* 按钮和选项区域 */
+.controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 两端对齐 */
+    gap: 10px;
+}
+
+button {
+    padding: 10px 25px;
+    font-size: 16px;
+    background-color: #007AFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.checkbox-wrapper {
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+.checkbox-wrapper input {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+}
+</style>
+</head>
+<body>
+
+<div id="text-container">请在输入框写入文字</div>
+
+<form>
+    <textarea id="input-box" placeholder="在此输入文字..."></textarea>
+    
+    <div class="controls">
+        <label class="checkbox-wrapper">
+            <input type="checkbox" id="remove-space-option"> 去除空格
+        </label>
+        
+        <button type="button" onclick="replaceText()">提交</button>
+    </div>
+</form>
+
+<script>
+function replaceText() {
+    // 获取输入内容
+    var inputText = document.getElementById("input-box").value;
+    
+    // 获取是否勾选去空格
+    var needRemoveSpace = document.getElementById("remove-space-option").checked;
+    
+    // 处理去空格逻辑 (保留换行符 \n，只去空格和Tab)
+    if (needRemoveSpace) {
+        inputText = inputText.replace(/[ \t]+/g, '');
+    }
+
+    // --- 核心逻辑保留 ---
+    // 使用 innerHTML 直接替换，这和你原文件的逻辑一致，
+    // 这样 Edge 浏览器能识别到内容变化并进行朗读。
+    document.getElementById("text-container").innerHTML = inputText;
+    
+    // 清空输入框
+    document.getElementById("input-box").value = "";
+}
+</script>
+
+</body>
+</html>
