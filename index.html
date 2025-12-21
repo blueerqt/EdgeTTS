@@ -118,40 +118,37 @@ button {
 </form>
 
 <script>
-// 公共文本处理逻辑
-function processText(text) {
+function replaceText() {
+    // 获取输入框元素
+    var inputBox = document.getElementById("input-box");
+    // 获取输入内容
+    var inputText = inputBox.value;
+    
     // 1. 获取是否勾选去空格
     var needRemoveSpace = document.getElementById("remove-space-option").checked;
     
     // 2. 获取是否勾选去星号 (*)
     var needRemoveStar = document.getElementById("remove-star-option").checked;
+    
+    // --- 处理逻辑 ---
 
     // 逻辑 A: 去除空格 (保留换行符 \n，只去空格和Tab)
     if (needRemoveSpace) {
-        text = text.replace(/[ \t]+/g, '');
+        inputText = inputText.replace(/[ \t]+/g, '');
     }
 
     // 逻辑 B: 去除星号 (*)，注意 * 在正则里是特殊符号，需要转义 \*
     if (needRemoveStar) {
-        text = text.replace(/\*/g, '');
+        inputText = inputText.replace(/\*/g, '');
     }
-    
-    return text;
-}
-
-function replaceText() {
-    // 获取输入内容
-    var inputText = document.getElementById("input-box").value;
-    
-    // 处理文本
-    var finalText = processText(inputText);
 
     // --- 核心逻辑保留 ---
-    // 使用 innerHTML 直接替换
-    document.getElementById("text-container").innerHTML = finalText;
+    // 使用 innerHTML 直接替换，这和你原文件的逻辑一致，
+    // 这样 Edge 浏览器能识别到内容变化并进行朗读。
+    document.getElementById("text-container").innerHTML = inputText;
     
     // 清空输入框
-    document.getElementById("input-box").value = "";
+    inputBox.value = "";
 }
 
 async function pasteText() {
@@ -159,11 +156,12 @@ async function pasteText() {
         // 读取剪贴板内容
         const text = await navigator.clipboard.readText();
         
-        // 处理文本（应用勾选的过滤选项）
-        var finalText = processText(text);
+        // 1. 将剪贴板内容填入输入框
+        document.getElementById("input-box").value = text;
         
-        // 直接显示在上方区域
-        document.getElementById("text-container").innerHTML = finalText;
+        // 2. 直接调用提交逻辑 (复用 replaceText 函数)
+        // 这样可以确保"去空格"和"去星号"的逻辑被正确应用
+        replaceText();
         
     } catch (err) {
         console.error('Failed to read clipboard: ', err);
