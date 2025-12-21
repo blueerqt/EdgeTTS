@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>文字替换 (TTS朗读版)</title>
+<title>移动设备优化TTS播放器</title>
 <style>
 /* 全局样式：让页面在手机上更好看 */
 body {
@@ -58,6 +58,12 @@ body {
     flex-wrap: wrap; /* 屏幕极小时允许换行 */
 }
 
+/* 按钮组，确保按钮紧凑排列 */
+.btn-group {
+    display: flex;
+    gap: 10px;
+}
+
 button {
     padding: 10px 25px;
     font-size: 16px;
@@ -67,6 +73,11 @@ button {
     border-radius: 5px;
     cursor: pointer;
     flex-shrink: 0; /* 防止按钮被挤压变形 */
+}
+
+/* 粘贴按钮样式，使用绿色区分 */
+.btn-paste {
+    background-color: #34C759;
 }
 
 .checkbox-wrapper {
@@ -99,40 +110,65 @@ button {
             </label>
         </div>
         
-        <button type="button" onclick="replaceText()">提交</button>
+        <div class="btn-group">
+            <button type="button" class="btn-paste" onclick="pasteText()">粘贴</button>
+            <button type="button" onclick="replaceText()">提交</button>
+        </div>
     </div>
 </form>
 
 <script>
-function replaceText() {
-    // 获取输入内容
-    var inputText = document.getElementById("input-box").value;
-    
+// 公共文本处理逻辑
+function processText(text) {
     // 1. 获取是否勾选去空格
     var needRemoveSpace = document.getElementById("remove-space-option").checked;
     
     // 2. 获取是否勾选去星号 (*)
     var needRemoveStar = document.getElementById("remove-star-option").checked;
-    
-    // --- 处理逻辑 ---
 
     // 逻辑 A: 去除空格 (保留换行符 \n，只去空格和Tab)
     if (needRemoveSpace) {
-        inputText = inputText.replace(/[ \t]+/g, '');
+        text = text.replace(/[ \t]+/g, '');
     }
 
     // 逻辑 B: 去除星号 (*)，注意 * 在正则里是特殊符号，需要转义 \*
     if (needRemoveStar) {
-        inputText = inputText.replace(/\*/g, '');
+        text = text.replace(/\*/g, '');
     }
+    
+    return text;
+}
+
+function replaceText() {
+    // 获取输入内容
+    var inputText = document.getElementById("input-box").value;
+    
+    // 处理文本
+    var finalText = processText(inputText);
 
     // --- 核心逻辑保留 ---
-    // 使用 innerHTML 直接替换，这和你原文件的逻辑一致，
-    // 这样 Edge 浏览器能识别到内容变化并进行朗读。
-    document.getElementById("text-container").innerHTML = inputText;
+    // 使用 innerHTML 直接替换
+    document.getElementById("text-container").innerHTML = finalText;
     
     // 清空输入框
     document.getElementById("input-box").value = "";
+}
+
+async function pasteText() {
+    try {
+        // 读取剪贴板内容
+        const text = await navigator.clipboard.readText();
+        
+        // 处理文本（应用勾选的过滤选项）
+        var finalText = processText(text);
+        
+        // 直接显示在上方区域
+        document.getElementById("text-container").innerHTML = finalText;
+        
+    } catch (err) {
+        console.error('Failed to read clipboard: ', err);
+        alert('无法读取剪贴板。请确保浏览器已授权访问剪贴板，或者手动粘贴到输入框。');
+    }
 }
 </script>
 
