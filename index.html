@@ -106,7 +106,7 @@ button {
                 <input type="checkbox" id="remove-space-option"> 去除空格
             </label>
             <label class="checkbox-wrapper">
-                <input type="checkbox" id="remove-star-option"> 去除 *
+                <input type="checkbox" id="remove-symbol-option"> 去除符号
             </label>
         </div>
         
@@ -127,8 +127,8 @@ function replaceText() {
     // 1. 获取是否勾选去空格
     var needRemoveSpace = document.getElementById("remove-space-option").checked;
     
-    // 2. 获取是否勾选去星号 (*)
-    var needRemoveStar = document.getElementById("remove-star-option").checked;
+    // 2. 获取是否勾选去符号
+    var needRemoveSymbol = document.getElementById("remove-symbol-option").checked;
     
     // --- 处理逻辑 ---
 
@@ -137,9 +137,9 @@ function replaceText() {
         inputText = inputText.replace(/[ \t]+/g, '');
     }
 
-    // 逻辑 B: 去除星号 (*)，注意 * 在正则里是特殊符号，需要转义 \*
-    if (needRemoveStar) {
-        inputText = inputText.replace(/\*/g, '');
+    // 逻辑 B: 去除符号 (保留汉字、字母、数字、空格、换行，以及 , . ， 。)
+    if (needRemoveSymbol) {
+        inputText = inputText.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s,.\u3002\uff0c]/g, '');
     }
 
     // --- 核心逻辑保留 ---
