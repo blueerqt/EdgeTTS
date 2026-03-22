@@ -160,7 +160,7 @@ async function pasteText() {
         document.getElementById("input-box").value = text;
         
         // 2. 直接调用提交逻辑 (复用 replaceText 函数)
-        // 这样可以确保"去空格"和"去星号"的逻辑被正确应用
+        // 这一步就是实现了“粘贴并提交”的功能
         replaceText();
         
     } catch (err) {
