@@ -112,43 +112,56 @@ button {
         
         <div class="btn-group">
             <button type="button" class="btn-paste" onclick="pasteText()">粘贴</button>
-            <button type="button" onclick="replaceText()">提交</button>
+            <button type="button" onclick="onSubmitClick()">提交</button>
         </div>
     </div>
 </form>
 
 <script>
+const CLICK_API_URL = "https://你的后端域名/api/click";
+const CLICK_API_KEY = ""; // 后端配置了 CLICK_METRICS_API_KEY 就填
+
+async function reportSubmitClick() {
+    const headers = { "Content-Type": "application/json" };
+    if (CLICK_API_KEY) headers["X-API-Key"] = CLICK_API_KEY;
+
+    try {
+        await fetch(CLICK_API_URL, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+                service: "EdgeTTS_Web",
+                page: location.pathname, // 会是 /EdgeTTS/
+                action: "submit"
+            }),
+            keepalive: true
+        });
+    } catch (e) {
+        console.warn("click report failed:", e);
+    }
+}
+
 function replaceText() {
-    // 获取输入框元素
     var inputBox = document.getElementById("input-box");
-    // 获取输入内容
     var inputText = inputBox.value;
-    
-    // 1. 获取是否勾选去空格
+
+    // 空内容不提交
+    if (!inputText.trim()) return false;
+
     var needRemoveSpace = document.getElementById("remove-space-option").checked;
-    
-    // 2. 获取是否勾选去符号
     var needRemoveSymbol = document.getElementById("remove-symbol-option").checked;
-    
-    // --- 处理逻辑 ---
 
-    // 逻辑 A: 去除空格 (保留换行符 \n，只去空格和Tab)
-    if (needRemoveSpace) {
-        inputText = inputText.replace(/[ \t]+/g, '');
-    }
+    if (needRemoveSpace) inputText = inputText.replace(/[ \t]+/g, '');
+    if (needRemoveSymbol) inputText = inputText.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s,.\u3002\uff0c]/g, '');
 
-    // 逻辑 B: 去除符号 (保留汉字、字母、数字、空格、换行，以及 , . ， 。)
-    if (needRemoveSymbol) {
-        inputText = inputText.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s,.\u3002\uff0c]/g, '');
-    }
-
-    // --- 核心逻辑保留 ---
-    // 使用 innerHTML 直接替换，这和你原文件的逻辑一致，
-    // 这样 Edge 浏览器能识别到内容变化并进行朗读。
     document.getElementById("text-container").innerHTML = inputText;
-    
-    // 清空输入框
     inputBox.value = "";
+    return true;
+}
+
+async function onSubmitClick() {
+    const ok = replaceText();
+    if (ok) await reportSubmitClick();
 }
 
 async function pasteText() {
@@ -160,7 +173,7 @@ async function pasteText() {
         document.getElementById("input-box").value = text;
         
         // 2. 直接调用提交逻辑 (复用 replaceText 函数)
-        // 这样可以确保"去空格"和"去星号"的逻辑被正确应用
+        // 这样可以确保"去空格"和"去星号"的逻辑被正确应用，且不会触发提交记数
         replaceText();
         
     } catch (err) {
